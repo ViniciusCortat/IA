@@ -2,14 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-int main(int argc, char *argv[]) {
+int** lerAqrq(char *argv) {
 	FILE *arq; // Arquivo sendo lido
 	int **valores; // Pega os valores do arquivo
 	char str1[30]; // Procura por strings importantes do arquivo
 	int dim = 0; // Dimensao da matriz
 	int i, j,cont; // Variaveis auxiliares
 	
-	arq = fopen(argv[1],"rt"); // Le o arquivo que foi passado como argumento na main
+	arq = fopen(argv,"rt"); // Le o arquivo que foi passado como argumento na main
 	if(arq == NULL) { // em caso de erro
 		printf("Deu ruim na leitura do arquivo\n");
 		exit(0);
@@ -60,13 +60,12 @@ int main(int argc, char *argv[]) {
 			}
 			else {
 				fscanf(arq,"%d",&valores[i][j]);
-				printf("Valores[%d][%d]: %d\n",i,j,valores[i][j]);
 				cont--;
 				j++;
 			}
 		}
 	}
 	fclose(arq);
-	return 0;
+	return valores;
 	 
 }
