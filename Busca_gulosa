@@ -1,0 +1,149 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+	int custo; // Valor de cada rota
+} Valor;
+
+void busca_gulosa(Valor **valores, int dim){
+	int k, i, j, aux, *caminho, menor, referencia;
+	//int latencia = 0;	
+	i = 0;
+	j = 0;
+	k = 0;
+	aux = 0;
+	int *cidPass = (int *) malloc(dim*sizeof(int));
+	caminho = (int *) malloc(dim*sizeof(int));
+	
+	for(i = 0; i<dim;i++)
+		cidPass[i] = 0;
+	
+	cidPass[0] = 1;
+	caminho[0] = 0;
+	aux = 0;
+	while(k != dim) {
+		
+		menor = 2147000000;
+		for(j = 0; j < aux; j++){
+			if(!cidPass[j] && menor > valores[aux][j].custo){
+				referencia = j;
+				menor = valores[aux][j].custo;
+			}
+		}
+		
+		for(i = j;i < dim; i++){
+			if(!cidPass[i] && menor > valores[i][aux].custo){
+				referencia = i;
+				menor = valores[i][aux].custo;
+			}
+		}
+		caminho[k+1] = referencia;
+		aux = referencia;	
+		cidPass[aux] = 1;
+		k++;			
+	}		
+		
+	printf("caminho:\n");
+	for(i = 0; i < dim; i++)
+		printf("%d : %d\n", i, caminho[i]);
+	
+		/*
+	for(i = 0; i < dim; i++){
+		//printf("%d entrei\n",i);
+		if(i == (dim - 1)){
+			//printf("entreiiiiiii\n");
+			latencia = latencia + valores[5][5].custo;
+		}
+		else {
+			latencia = latencia + 2 * (valores[caminho[i]][i].custo);
+		}
+		
+	}
+	
+	printf("Latencia: %d\n",latencia);
+	*/
+
+}
+
+
+int main(int argc, char *argv[]) {
+	FILE *arq; // Arquivo sendo lido
+	Valor **valores; // Pega os valores do arquivo
+	int *cidPass; // Vetor de booleana das cidades que ja foram visitadas
+	int loc; // Variavel serve como ponteiro do grafo
+	char str1[30]; // Procura por strings importantes do arquivo
+	int dim = 0; // Dimensao da matriz
+	int i, j, k, p, cont; // Variaveis auxiliares
+	
+	//--------------------------INICIO DA LEITURA DO ARQUIVO ---------------------------------------
+	
+	arq = fopen(argv[1],"rt"); // Le o arquivo que foi passado como argumento na main
+	if(arq == NULL) { // em caso de erro
+		printf("Deu ruim na leitura do arquivo\n");
+		exit(0);
+	}
+	while(dim == 0) { // Pega a dimensao da matriz
+		fscanf(arq,"%s",&str1);
+		if(strcmp(str1, "DIMENSION:") == 0) {
+			fscanf(arq,"%d",&dim);
+		}
+	}
+	valores = (Valor**) malloc(dim * sizeof(Valor*)); // aloca dinamicamente e inicializa a matriz
+	cidPass = (int*) malloc(dim * sizeof(int)); // aloca dinamicamente e inicializa o vetor
+	for(i = 0; i < dim; i++) {
+		cidPass[i] = 0; 
+		valores[i] = (Valor*) malloc(dim * sizeof(Valor));
+		for(j = 0; j < dim; j++) {
+			valores[i][j].custo = 0;
+		}
+	}
+	cidPass[0] = 1;
+	i = 0;
+	j = 0;
+	while(strcmp(str1,"EDGE_WEIGHT_FORMAT:") != 0) // Pega o tipo de leitura
+		fscanf(arq,"%s",&str1);
+	fscanf(arq,"%s",&str1);
+	if(strcmp(str1,"LOWER_DIAG_ROW") == 0) { // Caso seja LOWER DIAG ROW
+		while(strcmp(str1,"EDGE_WEIGHT_SECTION") != 0) // Joga a leitura ate o primeiro valor
+			fscanf(arq,"%s",&str1);
+		cont = ((dim * dim)/2) + (dim/2);
+		while(cont > 0) { // Preenche o vetor valores
+			fscanf(arq,"%d",&valores[i][j].custo);
+			valores[j][i].custo = valores[i][j].custo;
+			//printf("Valores[%d][%d]: %d\n",i,j,valores[i][j].custo);
+			if(valores[i][j].custo == 0) {
+				i++;
+				j = 0;
+			}
+			else
+				j++;
+			cont--;
+		}
+	}
+	if(strcmp(str1,"UPPER_ROW") == 0) { // Caso seja UPPER ROW
+		while(strcmp(str1,"EDGE_WEIGHT_SECTION") != 0) // Joga a leitura ate o primeiro valor
+			fscanf(arq,"%s",&str1);
+		cont = ((dim * dim)/2) - (dim/2);
+		while(cont > 0) { // Preenche o vetor valores
+			if(i >= j)
+				j++;
+			else if(j == dim) {
+				i++;
+				j = 0;
+			}
+			else {
+				fscanf(arq,"%d",&valores[i][j].custo);
+				valores[j][i].custo = valores[i][j].custo;
+				//printf("Valores[%d][%d]: %d\n",i,j,valores[i][j].custo);
+				cont--;
+				j++;
+			}
+		}
+	}
+	fclose(arq);
+	//---------------------------------FIM DA LEITURA DO ARQUIVO -----------------------------------
+	busca_gulosa(valores, dim);
+	return 0;
+	 
+}
